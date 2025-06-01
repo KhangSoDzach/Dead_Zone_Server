@@ -54,20 +54,28 @@ router.post('/register', async (req, res) => {
 
     await playerData.save();
 
-    // Create and return JWT token
+    // Return jsonwebtoken - sử dụng JWT_SECRET từ .env
     const payload = {
       user: {
-        id: user._id
+        id: user.id
       }
     };
 
     jwt.sign(
       payload,
-      process.env.JWT_SECRET || 'deadzonesecretkey',
-      { expiresIn: '7d' },
+      process.env.JWT_SECRET, // Sử dụng JWT_SECRET từ .env thay vì fallback
+      { expiresIn: '24h' },
       (err, token) => {
         if (err) throw err;
-        res.json({ token });
+        console.log(`[GameAPI] Token generated for user: ${user.username}`);
+        res.json({ 
+          token,
+          user: {
+            id: user.id,
+            username: user.username,
+            email: user.email
+          }
+        });
       }
     );
   } catch (err) {
@@ -99,20 +107,28 @@ router.post('/login', async (req, res) => {
     user.lastLogin = Date.now();
     await user.save();
 
-    // Create and return JWT token
+    // Return jsonwebtoken - sử dụng JWT_SECRET từ .env
     const payload = {
       user: {
-        id: user._id
+        id: user.id
       }
     };
 
     jwt.sign(
       payload,
-      process.env.JWT_SECRET || 'deadzonesecretkey',
-      { expiresIn: '7d' },
+      process.env.JWT_SECRET, // Sử dụng JWT_SECRET từ .env thay vì fallback
+      { expiresIn: '24h' },
       (err, token) => {
         if (err) throw err;
-        res.json({ token });
+        console.log(`[GameAPI] Token generated for user: ${user.username}`);
+        res.json({ 
+          token,
+          user: {
+            id: user.id,
+            username: user.username,
+            email: user.email
+          }
+        });
       }
     );
   } catch (err) {
@@ -131,6 +147,63 @@ router.get('/user', auth, async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
+  }
+});
+
+// @route   GET api/auth/verify
+// @desc    Verify token validity
+// @access  Private
+router.get('/verify', auth, async (req, res) => {
+  try {
+    console.log(`[Auth] Token verification request for user ID: ${req.user.id}`);
+    
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      console.log(`[Auth] User not found during token verification: ${req.user.id}`);
+      return res.status(404).json({ valid: false, error: 'User not found' });
+    }
+
+    console.log(`[Auth] Token verified successfully for user: ${user.username}`);
+    res.json({ 
+      valid: true, 
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email
+      }
+    });
+  } catch (err) {
+    console.error('[Auth] Token verification error:', err.message);
+    res.status(500).json({ valid: false, error: 'Server error' });
+  }
+});
+
+// @route   POST api/auth/validate
+// @desc    Alternative endpoint to validate token
+// @access  Private
+router.post('/validate', auth, async (req, res) => {
+  try {
+    console.log(`[Auth] Token validation request for user ID: ${req.user.id}`);
+    
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      console.log(`[Auth] User not found during token validation: ${req.user.id}`);
+      return res.status(404).json({ valid: false, error: 'User not found' });
+    }
+
+    console.log(`[Auth] Token validated successfully for user: ${user.username}`);
+    res.json({ 
+      valid: true, 
+      authenticated: true,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email
+      }
+    });
+  } catch (err) {
+    console.error('[Auth] Token validation error:', err.message);
+    res.status(500).json({ valid: false, authenticated: false, error: 'Server error' });
   }
 });
 

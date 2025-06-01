@@ -10,11 +10,6 @@ This document outlines how to set up and run the server and game integration for
 
 ### Installation & Running
 
-1. Navigate to the server directory:
-   ```
-   cd "e:\Code\Game\DuAn\Dead_Zone_Server"
-   ```
-
 2. Install dependencies (if needed):
    ```
    npm install

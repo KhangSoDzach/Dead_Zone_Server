@@ -30,7 +30,8 @@ const WeaponSchema = new mongoose.Schema({
 const CheckpointSchema = new mongoose.Schema({
   sceneId: {
     type: String,
-    required: true
+    required: false,  // Sửa: không require nữa
+    default: 'City'  // Thêm default value
   },
   position: {
     x: { type: Number, default: 0 },

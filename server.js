@@ -26,7 +26,7 @@ app.get('/', (req, res) => {
 
 // Connect to MongoDB
 mongoose
-  .connect(process.env.MONGO_URI || 'mongodb://localhost:27017/dead_zone_db', {
+  .connect(process.env.MONGO_URI || 'mongodb://localhost:27017/deadzone', {
     useNewUrlParser: true,
     useUnifiedTopology: true
   })
